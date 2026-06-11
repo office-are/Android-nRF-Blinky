@@ -58,6 +58,8 @@ interface Blinky {
          * This flow emits an event when the button is pressed for 2 seconds.
          */
         val buttonLongPressed: Flow<Unit>
+        // ★これを追加: スライダーの状態と操作窓口
+        val slider: MutableStateFlow<Int>
     }
 
 }

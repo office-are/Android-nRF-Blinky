@@ -3,15 +3,19 @@ package no.nordicsemi.android.blinky.ui.control.view
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth // ★追加
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.LinkOff
+import androidx.compose.material3.Card // ★追加
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.OutlinedIconToggleButton
+import androidx.compose.material3.Slider // ★追加
+import androidx.compose.material3.Text // ★追加
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -37,6 +41,9 @@ internal fun BlinkyControlView(
     buttonState: Boolean,
     buttonPressed: Flow<Unit>,
     buttonLongPressed: Flow<Unit>,
+    // ★追加: スライダー用の引数
+    sliderState: Int,
+    onSliderChanged: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -60,6 +67,28 @@ internal fun BlinkyControlView(
             buttonPressed = buttonPressed,
             buttonLongPressed = buttonLongPressed,
         )
+
+        // ★追加: ボタンとスライダーの間の縦線（デザインの統一用）
+        VerticalDivider(
+            modifier = Modifier.height(16.dp)
+        )
+
+        // ★追加: スライダー用のUIカード
+        Card(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = "Slider Control (Value: $sliderState)")
+
+                Slider(
+                    value = sliderState.toFloat(),
+                    onValueChange = { newValue ->
+                        onSliderChanged(newValue.toInt())
+                    },
+                    valueRange = 0f..255f
+                )
+            }
+        }
     }
 }
 
@@ -100,6 +129,7 @@ private fun Binding(
 @Composable
 private fun BlinkyControlViewPreview() {
     var bindingState by rememberSaveable { mutableStateOf(false) }
+    var previewSliderValue by rememberSaveable { mutableStateOf(128) } // プレビュー用
 
     BlinkyControlView(
         ledState = true,
@@ -110,6 +140,9 @@ private fun BlinkyControlViewPreview() {
         buttonState = true,
         buttonPressed = emptyFlow(),
         buttonLongPressed = emptyFlow(),
+        // ★追加: プレビュー用のダミーデータ
+        sliderState = previewSliderValue,
+        onSliderChanged = { previewSliderValue = it },
         modifier = Modifier.padding(16.dp),
     )
 }

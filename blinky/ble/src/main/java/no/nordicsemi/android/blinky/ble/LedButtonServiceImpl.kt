@@ -56,7 +56,8 @@ internal class LedButtonServiceImpl(
      */
     private var ledCharacteristic: RemoteCharacteristic = ledButtonService.characteristics
         .first { it.uuid == BlinkySpec.LED_CHARACTERISTIC_UUID }
-
+    private var sliderCharacteristic: RemoteCharacteristic? = ledButtonService.characteristics
+        .firstOrNull { it.uuid == BlinkySpec.SLIDER_CHARACTERISTIC_UUID }
     /**
      * The GATT characteristics of the LED Button Service (LBS) notified when the Button state on
      * the remote peripheral changes.
@@ -169,7 +170,35 @@ internal class LedButtonServiceImpl(
                 emit(Unit)
             } else emptyFlow()
         }
+    // ★追加: スライダーの状態管理と書き込み処理
+    override val slider = MutableStateFlow(0)
+        .also { stateFlow ->
+            scope.launch(Dispatchers.IO) {
+                // スライダー特性が見つからなかった場合（未対応デバイス）は何もしない
+                val char = sliderCharacteristic ?: return@launch
 
+                try {
+                    // 初期状態を読み込んでFlowに反映
+                    val rawValue = char.read()
+                    if (rawValue.isNotEmpty()) {
+                        // 1バイトのデータを0〜255のIntとして扱う
+                        stateFlow.update { rawValue[0].toUByte().toInt() }
+                    }
+                } catch (e: Exception) {
+                    Timber.w("Reading slider failed: ${e.message}")
+                }
+
+                // ViewModel(UI)から値が変更されるたびに、デバイスへ書き込む
+                stateFlow.collect { value ->
+                    try {
+                        val command = byteArrayOf(value.toByte())
+                        char.write(command)
+                    } catch (e: Exception) {
+                        Timber.w("Writing to slider failed: ${e.message}")
+                    }
+                }
+            }
+        }
     /**
      * Parses the raw value of LED and Button (0x00 or 0x01) to [Boolean].
      *

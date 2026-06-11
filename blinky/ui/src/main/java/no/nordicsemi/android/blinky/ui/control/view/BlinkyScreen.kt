@@ -28,7 +28,9 @@ import no.nordicsemi.android.blinky.ui.view.Reason
 import no.nordicsemi.android.common.logger.view.LoggerAppBarIcon
 import no.nordicsemi.android.common.permissions.ble.RequireBluetooth
 import no.nordicsemi.android.common.ui.view.NordicAppBar
-
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Card
+import androidx.compose.material3.Slider
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun BlinkyScreen(
@@ -103,7 +105,8 @@ internal fun BlinkyScreen(
                     val ledState by s.state.led.collectAsStateWithLifecycle()
                     val buttonState by s.state.button.collectAsStateWithLifecycle()
                     val bindingState by viewModel.bindingState.collectAsStateWithLifecycle()
-
+                    // ★ 新規追加: スライダーの最新状態を監視
+                    val sliderState by s.state.slider.collectAsStateWithLifecycle()
                     BlinkyControlView(
                         ledState = ledState,
                         onStateChanged = viewModel::turnLed,
@@ -113,6 +116,8 @@ internal fun BlinkyScreen(
                         buttonState = buttonState,
                         buttonPressed = s.state.buttonPressed,
                         buttonLongPressed = s.state.buttonLongPressed,
+                        sliderState = sliderState,
+                        onSliderChanged = viewModel::setSliderValue,
                         modifier = Modifier
                             .widthIn(max = 460.dp)
                             .verticalScroll(rememberScrollState())

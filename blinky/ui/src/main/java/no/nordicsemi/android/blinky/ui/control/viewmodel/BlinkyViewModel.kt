@@ -206,4 +206,13 @@ internal class BlinkyViewModel @AssistedInject constructor(
             vibrator.vibrate(durationMs)
         }
     }
+
+    // View Model public API (turnLed などの下に追加)
+
+    // ★UIからスライダーが動かされた時に呼ばれる関数
+    fun setSliderValue(value: Int) {
+        // LEDと同じように、現在の接続状態(state)からスライダーのFlowに値をセットするだけ！
+        // あとは LedButtonServiceImpl 側が自動でBLE送信してくれます。
+        state.value.blinky?.slider?.value = value
+    }
 }

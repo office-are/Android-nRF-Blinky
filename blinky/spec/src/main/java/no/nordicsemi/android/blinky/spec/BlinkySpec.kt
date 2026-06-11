@@ -16,6 +16,8 @@ class BlinkySpec {
         val BUTTON_CHARACTERISTIC_UUID: Uuid = Uuid.parse("00001524-1212-efde-1523-785feabcd123")
         /** The UUID of the LED characteristic. */
         val LED_CHARACTERISTIC_UUID: Uuid = Uuid.parse("00001525-1212-efde-1523-785feabcd123")
+        /** The UUID of the Slider characteristic. */
+        val SLIDER_CHARACTERISTIC_UUID: Uuid = Uuid.parse("00001526-1212-efde-1523-785feabcd123")
     }
 
 }
