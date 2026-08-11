@@ -9,11 +9,11 @@ import no.nordicsemi.android.scanner.view.BlinkyScanner
 data object ScannerKey: NavKey
 
 fun EntryProviderScope<NavKey>.scannerEntry(
-    onDeviceSelected: (String, String?) -> Unit
+    onDeviceSelected: (identifier: String, name: String?, myData8bit: Int) -> Unit
 ) = entry<ScannerKey> {
     BlinkyScanner(
-        onDeviceSelected = { device, name ->
-            onDeviceSelected(device, name)
+        onDeviceSelected = { device, name, myData8bit ->
+            onDeviceSelected(device, name, myData8bit)
         }
     )
 }

@@ -73,8 +73,8 @@ private fun App(identifier: String?, name: String?) {
         ),
         entryProvider = entryProvider {
             scannerEntry(
-                onDeviceSelected = { identifier, name ->
-                    backStack.add(BlinkyKey(BlinkyDevice(identifier, name)))
+                onDeviceSelected = { identifier, name, myData8bit ->
+                    backStack.add(BlinkyKey(BlinkyDevice(identifier, name, myData8bit)))
                 }
             )
             blinkyEntry(

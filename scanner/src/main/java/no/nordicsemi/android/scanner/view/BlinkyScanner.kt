@@ -22,7 +22,7 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 @Composable
 internal fun BlinkyScanner(
-    onDeviceSelected: (String, String?) -> Unit,
+    onDeviceSelected: (identifier: String, name: String?, myData8bit: Int) -> Unit,
 ) {
     // The scanner uses a Nordic common component (scanner-ble) from
     // https://github.com/nordicsemi/Android-Common-Libraries
@@ -46,7 +46,22 @@ internal fun BlinkyScanner(
         onResultSelected = { result ->
             when (result) {
                 is DeviceSelected -> with(result.scanResult) {
-                    onDeviceSelected(peripheral.identifier, advertisingData.name ?: peripheral.name)
+                    // ★ 1. M5Stackで設定したCompany ID (例: 0xFFFF)
+                    val companyId = 0xFFFF
+
+                    // ★ 2. manufacturerData から指定した Company ID のデータを取り出す
+                    // (manufacturerData は Map の構造になっています)
+                    val mfgData = advertisingData.manufacturerData[companyId]
+
+                    // ★ 3. 先頭バイトから myData8bit を抽出 (無ければ 0)
+                    val myData8bit = if (mfgData != null && mfgData.isNotEmpty()) {
+                        mfgData[0].toInt() and 0xFF
+                    } else {
+                        0
+                    }
+
+                    // ★ 4. 抽出した myData8bit も含めてコールバックを呼ぶ
+                    onDeviceSelected(peripheral.identifier, advertisingData.name ?: peripheral.name, myData8bit)
                 }
                 else -> {}
             }

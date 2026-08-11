@@ -11,6 +11,7 @@ import no.nordicsemi.android.blinky.ui.control.view.BlinkyScreen
 data class BlinkyDevice(
     val identifier: String,
     val name: String?,
+    val myData8bit: Int = 0
 )
 
 @Serializable
