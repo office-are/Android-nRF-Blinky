@@ -56,7 +56,9 @@ internal class BlinkyViewModel @AssistedInject constructor(
     /** The current state of the connection. */
     val state = MutableStateFlow<BlinkyConnectionManager.State>(BlinkyConnectionManager.State.Connecting)
     /** The slider value initialized with advertising data. */
-    val sliderValue = MutableStateFlow(target.myData8bit)
+    val sliderValue = MutableStateFlow((target.myData8bit and 0x7f))
+    // ★ 追加: myData8bit の bit7 を抽出 (0x80 との論理積が 0 でなければ bit7 = 1)
+    val ledState = MutableStateFlow((target.myData8bit and 0x80) != 0)
     /**
      * The current state of the Button -> LED binding.
      *
@@ -102,6 +104,15 @@ internal class BlinkyViewModel @AssistedInject constructor(
                     // Handle vibrations from the repository flows.
                     .filterIsInstance<BlinkyConnectionManager.State.Ready>()
                     .onEach { blinky ->
+                        blinky.state.led.value = ledState.value
+                        /*
+                        // ★ 新規追加: BLEからLEDの最新状態が届いたらFlowを更新する
+                        blinky.state.led
+                            .onEach { isOn ->
+                                ledState.value = isOn
+                            }
+                            .launchIn(this)
+                        */
                         blinky.state.button
                             .onEach {
                                 try {
@@ -155,6 +166,9 @@ internal class BlinkyViewModel @AssistedInject constructor(
     }
 
     fun turnLed(on: Boolean) {
+        // ★ 追加: もしUIの現在の状態と同じ値が来たら、BLE送信をスキップする
+        if (ledState.value == on) return
+        ledState.value = on
         state.value.blinky?.led?.value = on
     }
 

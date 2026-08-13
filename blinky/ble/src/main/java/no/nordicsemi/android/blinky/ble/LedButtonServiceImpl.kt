@@ -95,7 +95,7 @@ internal class LedButtonServiceImpl(
                 }
 
                 // Whenever the value changes, write the value to the characteristic.
-                it.collect { value ->
+                it.drop(1).collect { value ->
                     try {
                         val command = byteArrayOf(if (value) 1 else 0)
                         ledCharacteristic.write(command)
@@ -189,7 +189,7 @@ internal class LedButtonServiceImpl(
                 }
 
                 // ViewModel(UI)から値が変更されるたびに、デバイスへ書き込む
-                stateFlow.collect { value ->
+                stateFlow.drop(1).collect { value ->
                     try {
                         val command = byteArrayOf(value.toByte())
                         char.write(command)

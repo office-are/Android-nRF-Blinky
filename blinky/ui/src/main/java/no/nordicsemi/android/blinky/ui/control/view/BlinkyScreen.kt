@@ -102,7 +102,8 @@ internal fun BlinkyScreen(
                     )
                 }
                 is BlinkyConnectionManager.State.Ready -> {
-                    val ledState by s.state.led.collectAsStateWithLifecycle()
+                    // val ledState by s.state.led.collectAsStateWithLifecycle()
+                    val ledState by viewModel.ledState.collectAsStateWithLifecycle()
                     val buttonState by s.state.button.collectAsStateWithLifecycle()
                     val bindingState by viewModel.bindingState.collectAsStateWithLifecycle()
                     // ★ 新規追加: スライダーの最新状態を監視
