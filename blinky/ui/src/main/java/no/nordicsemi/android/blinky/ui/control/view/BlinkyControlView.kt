@@ -85,7 +85,8 @@ internal fun BlinkyControlView(
                     onValueChange = { newValue ->
                         onSliderChanged(newValue.toInt())
                     },
-                    valueRange = 0f..255f
+                    valueRange = 80f..120f,
+                    steps = 19
                 )
             }
         }

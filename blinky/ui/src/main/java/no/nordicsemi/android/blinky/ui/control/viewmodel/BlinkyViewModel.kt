@@ -55,6 +55,8 @@ internal class BlinkyViewModel @AssistedInject constructor(
 
     /** The current state of the connection. */
     val state = MutableStateFlow<BlinkyConnectionManager.State>(BlinkyConnectionManager.State.Connecting)
+    /** The slider value initialized with advertising data. */
+    val sliderValue = MutableStateFlow(target.myData8bit)
     /**
      * The current state of the Button -> LED binding.
      *
@@ -211,6 +213,9 @@ internal class BlinkyViewModel @AssistedInject constructor(
 
     // ★UIからスライダーが動かされた時に呼ばれる関数
     fun setSliderValue(value: Int) {
+        // ★ 追加: UIのスライダー位置を更新
+        sliderValue.value = value
+
         // LEDと同じように、現在の接続状態(state)からスライダーのFlowに値をセットするだけ！
         // あとは LedButtonServiceImpl 側が自動でBLE送信してくれます。
         state.value.blinky?.slider?.value = value
