@@ -234,4 +234,21 @@ internal class BlinkyViewModel @AssistedInject constructor(
         // あとは LedButtonServiceImpl 側が自動でBLE送信してくれます。
         state.value.blinky?.slider?.value = value
     }
+
+    // スライダーの値を-1する
+    fun decrementSlider() {
+        val current = sliderValue.value
+        if (current > 80) {
+            setSliderValue((current - 2).coerceAtLeast(80))
+        }
+    }
+
+    // スライダーの値を+1する
+    fun incrementSlider() {
+        val current = sliderValue.value
+        if (current < 120) {
+            setSliderValue((current + 2).coerceAtMost(120))
+        }
+    }
+
 }

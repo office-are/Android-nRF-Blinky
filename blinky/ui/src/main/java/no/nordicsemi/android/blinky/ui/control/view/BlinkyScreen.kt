@@ -2,6 +2,7 @@ package no.nordicsemi.android.blinky.ui.control.view
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -113,16 +114,13 @@ internal fun BlinkyScreen(
                         ledState = ledState,
                         onStateChanged = viewModel::turnLed,
                         onBlink = viewModel::blinkLed,
-                        bindingState = bindingState,
-                        onBindingChanged = { viewModel.bindingState.value = it },
-                        buttonState = buttonState,
-                        buttonPressed = s.state.buttonPressed,
-                        buttonLongPressed = s.state.buttonLongPressed,
                         sliderState = sliderState,
                         onSliderChanged = viewModel::setSliderValue,
+                        onIncrement = viewModel::incrementSlider, // ★ 追加
+                        onDecrement = viewModel::decrementSlider, // ★ 追加
                         modifier = Modifier
                             .widthIn(max = 460.dp)
-                            .verticalScroll(rememberScrollState())
+                            .fillMaxHeight()
                             .padding(16.dp)
                     )
                 }

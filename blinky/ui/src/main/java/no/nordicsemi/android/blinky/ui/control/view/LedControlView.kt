@@ -76,33 +76,6 @@ internal fun LedControlView(
                     enabled = enabled,
                 )
             }
-
-            // Blink action.
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 48.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(R.string.blinky_led_blink_descr, BlinkyViewModel.BLINK_COUNT),
-                    modifier = Modifier.weight(1f)
-                )
-                Button(
-                    onClick = onBlink,
-                    enabled = enabled,
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.LightMode,
-                        contentDescription = null,
-                        modifier = Modifier.padding(end = 4.dp).size(16.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.blinky_led_blink).uppercase(),
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                }
-            }
         }
     }
 }
