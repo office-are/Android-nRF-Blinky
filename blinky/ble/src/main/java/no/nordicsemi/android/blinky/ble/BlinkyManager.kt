@@ -33,10 +33,27 @@ class BlinkyManager(
     override suspend fun connect(
         block: suspend CoroutineScope.(Blinky.State) -> Unit,
     ): Unit = withContext(Dispatchers.IO) {
-        // First, install the LBS profile.
-        //
-        // Note, that in this implementation the profile is installed before creating the connection,
-        // but these can be swapped.
+
+        // 1. まずは物理的な接続（GATT接続）を確立する
+        try {
+            centralManager.connect(peripheral)
+        } catch (_: TimeoutCancellationException) {
+            throw BlinkyException.Timeout()
+        } catch (_: Exception) {
+            throw BlinkyException.ConnectionFailed()
+        }
+
+        // ===== 修正箇所: ここに挿入 =====
+        // 2. 接続が確立した直後、サービスの探索が始まる前にキャッシュをクリアする
+        // これにより、OSのゾンビ状態がリセットされ、正しいサービスが読み込まれる
+        try {
+            peripheral.refreshCache()
+        } catch (e: Exception) {
+            // refreshCacheが失敗しても、接続自体は続行させる
+        }
+        // ================================
+
+        // 3. 次に、Blinkyプロファイル（LED Button Service）をインストール・探索する
         peripheral.profile(
             serviceUuid = BlinkySpec.SERVICE_UUID,
             required = true,
@@ -55,17 +72,7 @@ class BlinkyManager(
             }
         }
 
-        // Initiate connection, if not connected already.
-        try {
-            centralManager.connect(peripheral)
-        } catch (_: TimeoutCancellationException) {
-            throw BlinkyException.Timeout()
-        } catch (_: Exception) {
-            throw BlinkyException.ConnectionFailed()
-        }
-
-        // Keep the coroutine alive until the peripheral disconnects.
-        // This method returns the disconnection reason.
+        // 4. 切断されるまで待機
         val reason = peripheral.awaitDisconnection()
         if (reason == Reason.RequiredServiceNotFound) {
             throw BlinkyException.NotSupported()
