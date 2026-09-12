@@ -4,7 +4,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import no.nordicsemi.android.blinky.spec.Blinky
 import no.nordicsemi.android.blinky.spec.BlinkySpec
 import no.nordicsemi.android.blinky.spec.exception.BlinkyException
@@ -34,24 +36,46 @@ class BlinkyManager(
         block: suspend CoroutineScope.(Blinky.State) -> Unit,
     ): Unit = withContext(Dispatchers.IO) {
 
-        // 1. まずは物理的な接続（GATT接続）を確立する
-        try {
-            centralManager.connect(peripheral)
-        } catch (_: TimeoutCancellationException) {
-            throw BlinkyException.Timeout()
-        } catch (_: Exception) {
-            throw BlinkyException.ConnectionFailed()
-        }
+        var isConnected = false
+        var retryCount = 0
+        val maxRetries = 2 // 1回だけ自動リトライする
 
-        // ===== 修正箇所: ここに挿入 =====
-        // 2. 接続が確立した直後、サービスの探索が始まる前にキャッシュをクリアする
-        // これにより、OSのゾンビ状態がリセットされ、正しいサービスが読み込まれる
-        try {
-            peripheral.refreshCache()
-        } catch (e: Exception) {
-            // refreshCacheが失敗しても、接続自体は続行させる
+        while (!isConnected && retryCount <= maxRetries) {
+            try {
+                // 【重要】OS標準の10秒タイムアウトを待たず、2秒で強制的に見切りをつける
+                // 1秒でも動きそうだが、余裕をもって2秒とする
+                withTimeout(2000L) {
+                    centralManager.connect(peripheral)
+                }
+
+                // --- 物理接続成功 ---
+
+                // 前回組み込んだキャッシュリフレッシュ（成功時のみ実行）
+                try {
+                    peripheral.refreshCache()
+                } catch (e: Exception) {
+                    // refreshCacheの失敗は無視
+                }
+
+                isConnected = true // ループを抜ける
+
+            } catch (e: TimeoutCancellationException) {
+                // 3秒経過しても繋がらない場合ここに来る（OSがゴースト状態に陥っている可能性大）
+                retryCount++
+                if (retryCount > maxRetries) {
+                    // リトライ上限を超えたら、本当のエラーとしてUIに返す
+                    throw BlinkyException.Timeout()
+                }
+
+                // 強制キャンセルの例外によってOSの内部状態がリセットされることを期待し、
+                // ほんの少し（300ms）待ってから、自動的に2回目の接続（ループ）を試みる
+                delay(300L)
+
+            } catch (e: Exception) {
+                // その他の致命的なエラーは即終了
+                throw BlinkyException.ConnectionFailed()
+            }
         }
-        // ================================
 
         // 3. 次に、Blinkyプロファイル（LED Button Service）をインストール・探索する
         peripheral.profile(
