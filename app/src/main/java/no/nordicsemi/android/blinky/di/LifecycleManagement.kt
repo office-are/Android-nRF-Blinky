@@ -62,11 +62,17 @@ internal class BluetoothLifecycleManager @Inject constructor(
 
     val environment: AndroidEnvironment
         get() = synchronized(this) {
+            if (_environment == null) {
+                initialize()
+            }
             requireNotNull(_environment) { "Bluetooth environment not initialized" }
         }
 
     val centralManager: CentralManager
         get() = synchronized(this) {
+            if (_centralManager == null) {
+                initialize()
+            }
             requireNotNull(_centralManager) { "CentralManager not initialized" }
         }
 
